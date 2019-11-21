@@ -1,6 +1,49 @@
 CREST
 =====
 
+crest是一款针对C语言的自动测试工具，支持深度优先（DFS）、控制流图（CFG）、一致随机（uniform random）和随机分支（random branch）四种搜索策略，使用符号执行技术，使用Yices作为约束求解器进行求解。
+
+安装步骤
+
+安装Cmaml：由于Crest需要CIL的支持，而CIL需要Ocaml的支持，所以先安装Ocaml，在googlegroup中作者说Ocaml 4.01.0可以bugfree，否则CIL可能会停止响应，但是我直接用的Ubuntu的apt-get，安装的3.12.1，运行起来也没啥问题。
+
+安装Yices，这个版本是特别古老的版本，Yices官网都已经给的是Yices2了，但是也提供老版本的下载，只是没有源码了，只有编译好的binary，自己按需下载，依赖包这种东西，错一个版本几乎就不能用，我不信邪，装了Yices2，结果。。我还是用了Yices1.0.40。之后按照Crest的要求，把crest/src/Makefile Yices的目录更新一下，方便编译。
+
+安装CIL：依赖包都安装完了，现在开始安装Crest，但是之前，要先安装CIL，去Crest/CIL/目录configure一下，看看缺什么包自己安装就好了，不过一般都是ocaml-find和libgmp-dev两个包。configure通过之后再make就好了。
+
+安装Crest：去Crest/src/目录下，make即可完成安装。
+
+
+test实验
+
+github上面给了一个test的运行例子，我也就是照着做了一遍，大概流程如下：
+首先，测试的C程序是test目录下的uniform_test.c，关键代码如下：
+
+```c
+if (a == 5) {
+    if (b == 19) {
+        if (c == 7) {
+            if (d == 4) {
+                fprintf(stderr, "GOAL!n");
+            }
+        }
+    }
+}
+```
+可以看到，如果约数求解成功，应该有八个分支，并且其中一个分支应该输出“GOAL！”。然后把程序改装一下，需要进行一些代码插桩，比如将变量利用CREST的函数声明，然后输出的时候使用stderr进行输出，这样就可以看到例子了。这些事情test的代码都已经做好，具体可以看看test是怎么做的。然后使用bin目录下的crest对代码进行插桩和编译工作。使用run_crest运行已经插桩好的二进制文件，可以得出如下输出：
+
+Iteration 0 (0s): covered 0 branches [0 reach funs, 0 reach branches].
+Iteration 1 (0s): covered 1 branches [1 reach funs, 8 reach branches].
+Iteration 2 (0s): covered 3 branches [1 reach funs, 8 reach branches].
+Iteration 3 (0s): covered 5 branches [1 reach funs, 8 reach branches].
+Iteration 4 (0s): covered 7 branches [1 reach funs, 8 reach branches].
+GOAL!
+Iteration 5 (0s): covered 8 branches [1 reach funs, 8 reach branches].
+
+可以看到，已经得出了8个分支，而且也输出了“GOAL！”。任务算是完成了吧。
+
+PS：这仅仅是对单个C文件的测试，据作者说还可以测试工程，等回来再行实验。
+
 CREST is a concolic test generation tool for C.
 
 Thanks for downloading and trying out CREST.
